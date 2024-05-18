@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrum Board</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .scrum-board {
+            display: flex;
+            justify-content: space-between;
+        }
+        .column {
+            width: 18%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+        }
+        .column h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .stories {
+            flex-grow: 1;
+        }
+        .story {
+            position: relative;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            cursor: move;
+        }
+        .task {
+            background-color: #e6ffe6;
+        }
+        .story strong {
+            display: block;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .story .story-id {
+            font-size: 12px;
+            color: #888;
+        }
+        .story .story-position {
+            font-size: 8px;
+            color: #888;
+        }
+        .story .assigned-persons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .assigned-person {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            color: white;
+            margin-left: 5px;
+        }
+        .delete-story {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .delete-story input {
+            margin-right: 5px;
+        }
+        .delete-story button {
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .delete-story button:hover {
+            background-color: #c82333;
+        }
+        .add-story, .add-person, .add-task {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        .add-story input, .add-story textarea, .add-story select, .add-person input, .add-task input, .add-task textarea {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .add-story button, .add-person button, .add-task button {
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .add-story button:hover, .add-person button:hover, .add-task button:hover {
+            background-color: #218838;
+        }
+        .export-import-buttons {
+            margin-bottom: 20px;
+        }
+        .export-import-buttons button {
+            padding: 10px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .export-import-buttons button:hover {
+            background-color: #0056b3;
+        }
+        .delete-persons {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        .delete-persons select, .delete-persons button {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .delete-persons button {
+            padding: 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .delete-persons button:hover {
+            background-color: #c82333;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
+</head>
+<body>
+    <h1>Scrum Board</h1>
+    <div>
+        <input type="checkbox" id="toggleAddStory" checked onchange="toggleInputFields('add-story', 'toggleAddStory')">
+        <label for="toggleAddStory">Hide Add Story</label>
+        <input type="checkbox" id="toggleAddPerson" checked onchange="toggleInputFields('add-person', 'toggleAddPerson')">
+        <label for="toggleAddPerson">Hide Add Person</label>
+        <input type="checkbox" id="toggleSelectPerson" checked onchange="toggleInputFields('delete-persons', 'toggleSelectPerson')">
+        <label for="toggleSelectPerson">Hide Select Person</label>
+    </div>
+    <div class="export-import-buttons">
+        <button onclick="exportScrumBoard()">Export Scrum Board</button>
+        <input type="file" id="importScrumBoardInput" style="display:none" onchange="importScrumBoard(event)">
+        <button onclick="document.getElementById('importScrumBoardInput').click()">Import Scrum Board</button>
+    </div>
+    <div class="add-story">
+        <input type="text" id="storyTitle" placeholder="Story Title">
+        <textarea id="storyDescription" rows="2" placeholder="Story Description"></textarea>
+        <button onclick="addStory()">Add Story</button>
+    </div>
+    <div class="add-person">
+        <input type="text" id="personFirstName" placeholder="First Name">
+        <input type="text" id="personLastName" placeholder="Last Name">
+        <input type="color" id="personColor" value="#000000">
+        <button onclick="addPerson()">Add Person</button>
+    </div>
+    <div class="delete-persons">
+        <select id="storyPerson" onchange="assignPerson()">
+            <option value="">Select a person</option>
+        </select>
+        <button onclick="deletePerson()">Delete Person</button>
+    </div>
+    <div class="scrum-board">
+        <div class="column" id="product-backlog" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h2>Product Backlog</h2>
+            <div class="stories"></div>
+        </div>
+        <div class="column" id="sprint-backlog" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h2>Sprint Backlog</h2>
+            <div class="stories"></div>
+        </div>
+        <div class="column" id="to-do" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h2>To Do</h2>
+            <div class="stories"></div>
+        </div>
+        <div class="column" id="in-progress" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h2>In Progress</h2>
+            <div class="stories"></div>
+        </div>
+        <div class="column" id="done" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h2>Done</h2>
+            <div class="stories"></div>
+        </div>
+    </div>
+
+    <div class="add-task" style="display: none;" id="addTaskForm">
+        <h3>Add Task</h3>
+        <input type="text" id="taskTitle" placeholder="Task Title">
+        <textarea id="taskDescription" rows="2" placeholder="Task Description"></textarea>
+        <button onclick="addTask()">Add Task</button>
+        <button onclick="closeTaskForm()">Cancel</button>
+    </div>
+
+    <script>
+        let storyCounter = 0;
+        let personCounter = 0;
+        let taskCounter = 0;
+        let selectedStoryId = null;
+        let scrumBoard = {
+            persons: [],
+            stories: []
+        };
+        let lines = [];
+
+        window.onload = () => {
+            populatePersonDropdown();
+            displayInitialStories();
+            toggleInputFields('add-story', 'toggleAddStory'); 
+            toggleInputFields('add-person', 'toggleAddPerson');
+            toggleInputFields('delete-persons', 'toggleSelectPerson'); 
+        };
+
+        function toggleInputFields(divClass, checkboxId) {
+            const isChecked = document.getElementById(checkboxId).checked;
+            const div = document.querySelector(`.${divClass}`);
+            div.style.display = isChecked ? 'none' : 'flex';
+        }
+
+        function populatePersonDropdown() {
+            const dropdown = document.getElementById('storyPerson');
+            dropdown.innerHTML = '<option value="">Select a person</option>';
+            scrumBoard.persons.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person.id;
+                option.textContent = `${person.firstName.charAt(0)}${person.lastName.charAt(0)}`;
+                option.style.color = person.color;
+                option.className = 'person-option';
+                dropdown.appendChild(option);
+            });
+        }
+
+        function displayInitialStories() {
+            scrumBoard.stories.forEach(story => displayStory(story));
+        }
+
+        function addStory() {
+            const title = document.getElementById('storyTitle').value;
+            const description = document.getElementById('storyDescription').value;
+
+            if (title && description) {
+                const storyId = 'story' + storyCounter++;
+                const storyNumber = 'US_' + (scrumBoard.stories.length + 1);
+                const column = 'product-backlog';
+                const position = document.getElementById(column).querySelectorAll('.story').length + 1;
+                const story = {
+                    id: storyId,
+                    number: storyNumber,
+                    title: title,
+                    description: description,
+                    column: column,
+                    position: position,
+                    personIds: [],
+                    tasks: []
+                };
+
+                scrumBoard.stories.push(story);
+                repaintBoard();
+
+                document.getElementById('storyTitle').value = '';
+                document.getElementById('storyDescription').value = '';
+            } else {
+                alert('Please enter both title and description.');
+            }
+        }
+
+        function addPerson() {
+            const firstName = document.getElementById('personFirstName').value;
+            const lastName = document.getElementById('personLastName').value;
+            const color = document.getElementById('personColor').value;
+
+            if (firstName && lastName) {
+                const personId = 'p' + (++personCounter);
+                const person = {
+                    id: personId,
+                    firstName: firstName,
+                    lastName: lastName,
+                    color: color
+                };
+
+                scrumBoard.persons.push(person);
+                populatePersonDropdown();
+
+                document.getElementById('personFirstName').value = '';
+                document.getElementById('personLastName').value = '';
+                document.getElementById('personColor').value = '#000000';
+            } else {
+                alert('Please enter both first name and last name.');
+            }
+        }
+
+        function deletePerson() {
+            const personId = document.getElementById('storyPerson').value;
+            if (personId) {
+                scrumBoard.persons = scrumBoard.persons.filter(person => person.id !== personId);
+                scrumBoard.stories.forEach(story => {
+                    story.personIds = story.personIds.filter(id => id !== personId);
+                    story.tasks.forEach(task => {
+                        task.personIds = task.personIds.filter(id => id !== personId);
+                        updateTaskDisplay(task);
+                    });
+                    updateStoryDisplay(story);
+                });
+                populatePersonDropdown();
+            } else {
+                alert('Please select a person to delete.');
+            }
+        }
+
+        function displayStory(story) {
+            const storyDiv = document.createElement('div');
+            const assignedPersonDivId = `assigned-persons-${story.id}`;
+            const storyTextId = `story-text-${story.id}`;
+            const deleteCheckboxId = `deleteCheckbox_${story.id}`;
+            storyDiv.className = 'story';
+            storyDiv.id = story.id;
+            storyDiv.innerHTML = `
+                <span class="story-id">${story.number}</span>
+                <span class="story-position">(${story.position})</span>
+                <strong>${story.title}</strong>
+                <div class="assigned-persons" id="${assignedPersonDivId}">${getAssignedPersonsHTML(story.personIds)}</div>
+                <p class="story-text" data-full-text="${story.description}" id="${storyTextId}" style="display: none;">
+                    ${story.description}
+                </p>
+                <div class="delete-story" style="display: none;">
+                    <input type="checkbox" id="${deleteCheckboxId}">
+                    <button onclick="deleteStory('${story.id}')">Delete</button>
+                </div>
+                <button class="make-task" style="display: none;" onclick="showTaskForm('${story.id}')">Make Task</button>
+                <div class="tasks"></div>
+            `;
+            storyDiv.setAttribute('draggable', 'true');
+            storyDiv.setAttribute('ondragstart', 'drag(event)');
+            storyDiv.setAttribute('onclick', 'selectStory(event)');
+            storyDiv.setAttribute('ondblclick', 'toggleDescription(event)');
+
+            document.getElementById(story.column).querySelector('.stories').appendChild(storyDiv);
+
+            story.tasks.forEach(task => {
+                displayTask(task, story.id);
+            });
+        }
+
+        function getAssignedPersonsHTML(personIds) {
+            return personIds.map(id => {
+                const person = scrumBoard.persons.find(p => p.id === id);
+                if (person) {
+                    const initials = person.firstName.charAt(0) + person.lastName.charAt(0);
+                    return `<div class="assigned-person" style="background-color: ${person.color};">${initials}</div>`;
+                } else {
+                    return '<div class="assigned-person">?</div>';
+                }
+            }).join('');
+        }
+
+        function toggleDescription(event) {
+            const storyDiv = event.currentTarget;
+            const storyText = storyDiv.querySelector('.story-text');
+            const deleteStoryDiv = storyDiv.querySelector('.delete-story');
+            const makeTaskButton = storyDiv.querySelector('.make-task');
+            if (storyText && deleteStoryDiv) {
+                if (storyText.style.display === 'none') {
+                    storyText.style.display = 'block';
+                    deleteStoryDiv.style.display = 'flex';
+                    if (makeTaskButton) makeTaskButton.style.display = 'block';
+                } else {
+                    storyText.style.display = 'none';
+                    deleteStoryDiv.style.display = 'none';
+                    if (makeTaskButton) makeTaskButton.style.display = 'none';
+                }
+            }
+        }
+
+        function deleteStory(storyId) {
+            const checkbox = document.getElementById(`deleteCheckbox_${storyId}`);
+            if (checkbox.checked) {
+                const storyElement = document.getElementById(storyId);
+                if (storyElement) {
+                    storyElement.parentNode.removeChild(storyElement);
+                }
+                scrumBoard.stories = scrumBoard.stories.filter(story => story.id !== storyId);
+                removeLinesForStory(storyId); // remove all lines related to the story
+                repaintBoard();
+            } else {
+                alert('Please check the checkbox to confirm deletion.');
+            }
+        }
+
+        function deleteTask(taskId, storyId) {
+            const taskElement = document.getElementById(taskId);
+            if (taskElement) {
+                taskElement.parentNode.removeChild(taskElement);
+            }
+            const story = scrumBoard.stories.find(s => s.id === storyId);
+            if (story) {
+                story.tasks = story.tasks.filter(task => task.id !== taskId);
+            }
+            removeLinesForStory(taskId); // remove all lines related to the task
+            repaintBoard();
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drag(event) {
+            event.dataTransfer.setData('text', event.target.id);
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const storyId = event.dataTransfer.getData('text');
+            const storyElement = document.getElementById(storyId);
+            const column = event.target.closest('.column');
+            if (column) {
+                column.querySelector('.stories').appendChild(storyElement);
+                const story = scrumBoard.stories.find(s => s.id === storyId) || scrumBoard.stories.flatMap(s => s.tasks).find(t => t.id === storyId);
+                if (story) {
+                    story.column = column.id;
+                    updatePositions(column.id);
+                }
+            }
+            updateLines();
+        }
+
+        function updatePositions(columnId) {
+            const storiesInColumn = Array.from(document.getElementById(columnId).querySelectorAll('.story'));
+            storiesInColumn.forEach((storyDiv, index) => {
+                const story = scrumBoard.stories.find(s => s.id === storyDiv.id) || scrumBoard.stories.flatMap(s => s.tasks).find(t => t.id === storyDiv.id);
+                story.position = index + 1;
+                storyDiv.querySelector('.story-position').textContent = `(${story.position})`;
+            });
+        }
+
+        function selectStory(event) {
+            const storyDiv = event.currentTarget;
+            selectedStoryId = storyDiv.id;
+            removeAllLines();
+            drawLinesForStory(selectedStoryId);
+        }
+
+        function assignPerson() {
+            const personId = document.getElementById('storyPerson').value;
+            if (selectedStoryId && personId) {
+                const selectedStory = scrumBoard.stories.find(s => s.id === selectedStoryId);
+                if (selectedStory) {
+                    const personIndex = selectedStory.personIds.findIndex(id => id === personId);
+                    if (personIndex > -1) {
+                        selectedStory.personIds.splice(personIndex, 1);
+                    } else {
+                        selectedStory.personIds.push(personId);
+                    }
+                    updateStoryDisplay(selectedStory);
+                } else {
+                    const selectedTask = scrumBoard.stories.flatMap(s => s.tasks).find(t => t.id === selectedStoryId);
+                    if (selectedTask) {
+                        const personIndex = selectedTask.personIds.findIndex(id => id === personId);
+                        if (personIndex > -1) {
+                            selectedTask.personIds.splice(personIndex, 1);
+                        } else {
+                            selectedTask.personIds.push(personId);
+                        }
+                        updateTaskDisplay(selectedTask);
+                    }
+                }
+            } else {
+                alert('Please select both a story/task and a person.');
+            }
+        }
+
+        function updateStoryDisplay(story) {
+            const storyDiv = document.getElementById(story.id);
+            const assignedPersonDivId = `assigned-persons-${story.id}`;
+            if (storyDiv) {
+                storyDiv.querySelector(`#${assignedPersonDivId}`).innerHTML = getAssignedPersonsHTML(story.personIds);
+            }
+        }
+
+        function updateTaskDisplay(task) {
+            const taskDiv = document.getElementById(task.id);
+            const assignedPersonDivId = `assigned-persons-${task.id}`;
+            if (taskDiv) {
+                taskDiv.querySelector(`#${assignedPersonDivId}`).innerHTML = getAssignedPersonsHTML(task.personIds);
+            }
+        }
+
+        function showTaskForm(storyId) {
+            selectedStoryId = storyId;
+            document.getElementById('addTaskForm').style.display = 'block';
+        }
+
+        function closeTaskForm() {
+            document.getElementById('addTaskForm').style.display = 'none';
+        }
+
+        function addTask() {
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const parentStory = scrumBoard.stories.find(s => s.id === selectedStoryId);
+
+            if (title && description && parentStory) {
+                const taskId = `${parentStory.id}-task${++taskCounter}`;
+                const taskNumber = `${parentStory.number}-T${taskCounter}`;
+                const column = parentStory.column;
+                const position = document.getElementById(column).querySelectorAll('.story').length + 1;
+                const task = {
+                    id: taskId,
+                    number: taskNumber,
+                    title: title,
+                    description: description,
+                    column: column,
+                    position: position,
+                    personIds: [],
+                    parentStoryId: parentStory.id
+                };
+
+                parentStory.tasks.push(task);
+                repaintBoard();
+
+                document.getElementById('taskTitle').value = '';
+                document.getElementById('taskDescription').value = '';
+                closeTaskForm();
+
+                drawLineBetweenElements(document.getElementById(parentStory.id), document.getElementById(task.id));
+            } else {
+                alert('Please enter both title and description.');
+            }
+        }
+
+        function displayTask(task, storyId) {
+            const taskDiv = document.createElement('div');
+            const assignedPersonDivId = `assigned-persons-${task.id}`;
+            const taskTextId = `task-text-${task.id}`;
+            const deleteCheckboxId = `deleteCheckbox_${task.id}`;
+            taskDiv.className = 'story task';
+            taskDiv.id = task.id;
+            taskDiv.innerHTML = `
+                <span class="story-id">${task.number}</span>
+                <span class="story-position">(${task.position})</span>
+                <strong>${task.title}</strong>
+                <div class="assigned-persons" id="${assignedPersonDivId}">${getAssignedPersonsHTML(task.personIds)}</div>
+                <p class="story-text" data-full-text="${task.description}" id="${taskTextId}" style="display: none;">
+                    ${task.description}
+                </p>
+                <div class="delete-story" style="display: none;">
+                    <input type="checkbox" id="${deleteCheckboxId}">
+                    <button onclick="deleteTask('${task.id}', '${storyId}')">Delete</button>
+                </div>
+            `;
+            taskDiv.setAttribute('draggable', 'true');
+            taskDiv.setAttribute('ondragstart', 'drag(event)');
+            taskDiv.setAttribute('onclick', 'selectStory(event)');
+            taskDiv.setAttribute('ondblclick', 'toggleDescription(event)');
+
+            document.getElementById(task.column).querySelector('.stories').appendChild(taskDiv);
+        }
+
+        function repaintBoard() {
+            document.querySelectorAll('.stories').forEach(storiesDiv => storiesDiv.innerHTML = '');
+            scrumBoard.stories.forEach(story => displayStory(story));
+            updateLines();
+        }
+
+        function exportScrumBoard() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(scrumBoard));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "scrum_board.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importScrumBoard(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    scrumBoard = JSON.parse(e.target.result);
+                    storyCounter = scrumBoard.stories.length;
+                    personCounter = scrumBoard.persons.length;
+
+                    repaintBoard();
+                    populatePersonDropdown(); // Ensure dropdown is updated after import
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function drawLineBetweenElements(startElement, endElement) {
+            if (startElement && endElement) {
+                const line = new LeaderLine(startElement, endElement);
+                lines.push(line);
+            }
+        }
+
+        function updateLines() {
+            lines.forEach(line => line.remove());
+            lines = [];
+            scrumBoard.stories.forEach(story => {
+                story.tasks.forEach(task => {
+                    drawLineBetweenElements(document.getElementById(story.id), document.getElementById(task.id));
+                });
+            });
+        }
+
+        function drawLinesForStory(storyId) {
+            const story = scrumBoard.stories.find(s => s.id === storyId);
+            if (story) {
+                story.tasks.forEach(task => {
+                    const startElement = document.getElementById(storyId);
+                    const endElement = document.getElementById(task.id);
+                    if (startElement && endElement) {
+                        drawLineBetweenElements(startElement, endElement);
+                    }
+                });
+            } else {
+                const task = scrumBoard.stories.flatMap(s => s.tasks).find(t => t.id === storyId);
+                if (task) {
+                    const startElement = document.getElementById(task.parentStoryId);
+                    const endElement = document.getElementById(task.id);
+                    if (startElement && endElement) {
+                        drawLineBetweenElements(startElement, endElement);
+                    }
+                }
+            }
+        }
+
+        function removeLinesForStory(storyId) {
+            lines = lines.filter(line => {
+                if (line.start.id === storyId || line.end.id === storyId) {
+                    line.remove();
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        function removeAllLines() {
+            lines.forEach(line => line.remove());
+            lines = [];
+        }
+    </script>
+</body>
+</html>
