@@ -37,27 +37,27 @@
             padding: 10px;
             margin: 10px 0;
             cursor: move;
-        }
-        .task {
-            background-color: #e6ffe6;
-        }
-        .story strong {
-            display: block;
-            font-size: 14px;
-            margin-top: 5px;
+            display: flex;
+            flex-direction: column;
         }
         .story .story-id {
             font-size: 12px;
             color: #888;
+            margin-bottom: 5px;
         }
         .story .story-position {
             font-size: 8px;
             color: #888;
+            margin-bottom: 5px;
+        }
+        .story strong {
+            font-size: 14px;
+            margin-bottom: 5px;
         }
         .story .assigned-persons {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 5px;
         }
         .assigned-person {
             display: inline-block;
@@ -68,7 +68,10 @@
             line-height: 20px;
             font-size: 12px;
             color: white;
-            margin-left: 5px;
+            margin: 2px 5px 0 0;
+        }
+        .story .story-text {
+            margin-bottom: 10px;
         }
         .delete-story {
             display: flex;
@@ -144,6 +147,42 @@
         .delete-persons button:hover {
             background-color: #c82333;
         }
+        .show-connections {
+            margin-bottom: 5px;
+            padding: 2px 0;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 10px;
+            width: 1cm;
+            text-align: center;
+            align-self: flex-end;
+        }
+        .story .show-connections {
+            align-self: flex-end;
+        }
+        .task .show-connections {
+            align-self: flex-start;
+        }
+        .show-connections:hover {
+            background-color: #0056b3;
+        }
+        .task {
+            background-color: lightblue;
+        }
+        .make-task {
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .make-task:hover {
+            background-color: #218838;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
 </head>
@@ -179,6 +218,12 @@
         </select>
         <button onclick="deletePerson()">Delete Person</button>
     </div>
+    <div class="add-task" id="addTaskForm" style="display: none;">
+        <input type="text" id="taskTitle" placeholder="Task Title">
+        <textarea id="taskDescription" rows="2" placeholder="Task Description"></textarea>
+        <button class="make-task" onclick="addTask()">New Task</button>
+        <button onclick="closeTaskForm()">Cancel</button>
+    </div>
     <div class="scrum-board">
         <div class="column" id="product-backlog" ondrop="drop(event)" ondragover="allowDrop(event)">
             <h2>Product Backlog</h2>
@@ -202,14 +247,6 @@
         </div>
     </div>
 
-    <div class="add-task" style="display: none;" id="addTaskForm">
-        <h3>Add Task</h3>
-        <input type="text" id="taskTitle" placeholder="Task Title">
-        <textarea id="taskDescription" rows="2" placeholder="Task Description"></textarea>
-        <button onclick="addTask()">Add Task</button>
-        <button onclick="closeTaskForm()">Cancel</button>
-    </div>
-
     <script>
         let storyCounter = 0;
         let personCounter = 0;
@@ -220,13 +257,14 @@
             stories: []
         };
         let lines = [];
+        let activeConnections = null;
 
         window.onload = () => {
             populatePersonDropdown();
             displayInitialStories();
-            toggleInputFields('add-story', 'toggleAddStory'); 
+            toggleInputFields('add-story', 'toggleAddStory');
             toggleInputFields('add-person', 'toggleAddPerson');
-            toggleInputFields('delete-persons', 'toggleSelectPerson'); 
+            toggleInputFields('delete-persons', 'toggleSelectPerson');
         };
 
         function toggleInputFields(divClass, checkboxId) {
@@ -330,25 +368,28 @@
             const assignedPersonDivId = `assigned-persons-${story.id}`;
             const storyTextId = `story-text-${story.id}`;
             const deleteCheckboxId = `deleteCheckbox_${story.id}`;
+            const connectionsCount = story.tasks.length;
             storyDiv.className = 'story';
             storyDiv.id = story.id;
             storyDiv.innerHTML = `
-                <span class="story-id">${story.number}</span>
-                <span class="story-position">(${story.position})</span>
+                ${connectionsCount > 0 ? `<button class="show-connections" onclick="toggleConnections('${story.id}')">${connectionsCount}</button>` : ''}
+                <span class="story-id story-position">${story.number} (${story.position})</span>
                 <strong>${story.title}</strong>
                 <div class="assigned-persons" id="${assignedPersonDivId}">${getAssignedPersonsHTML(story.personIds)}</div>
                 <p class="story-text" data-full-text="${story.description}" id="${storyTextId}" style="display: none;">
                     ${story.description}
                 </p>
+                <button class="make-task" style="display: none;" onclick="showTaskForm('${story.id}')">New Task</button>
                 <div class="delete-story" style="display: none;">
                     <input type="checkbox" id="${deleteCheckboxId}">
                     <button onclick="deleteStory('${story.id}')">Delete</button>
                 </div>
-                <button class="make-task" style="display: none;" onclick="showTaskForm('${story.id}')">Make Task</button>
                 <div class="tasks"></div>
             `;
             storyDiv.setAttribute('draggable', 'true');
             storyDiv.setAttribute('ondragstart', 'drag(event)');
+            storyDiv.setAttribute('ondragover', 'allowDrop(event)');
+            storyDiv.setAttribute('ondrop', 'drop(event)');
             storyDiv.setAttribute('onclick', 'selectStory(event)');
             storyDiv.setAttribute('ondblclick', 'toggleDescription(event)');
 
@@ -397,7 +438,6 @@
                     storyElement.parentNode.removeChild(storyElement);
                 }
                 scrumBoard.stories = scrumBoard.stories.filter(story => story.id !== storyId);
-                removeLinesForStory(storyId); // remove all lines related to the story
                 repaintBoard();
             } else {
                 alert('Please check the checkbox to confirm deletion.');
@@ -413,12 +453,29 @@
             if (story) {
                 story.tasks = story.tasks.filter(task => task.id !== taskId);
             }
-            removeLinesForStory(taskId); // remove all lines related to the task
             repaintBoard();
         }
 
         function allowDrop(event) {
             event.preventDefault();
+            const storyId = event.dataTransfer.getData('text');
+            const draggedElement = document.getElementById(storyId);
+            const column = event.target.closest('.column');
+            if (column && draggedElement) {
+                const storiesContainer = column.querySelector('.stories');
+                const targetStory = event.target.closest('.story');
+                if (targetStory) {
+                    const bounding = targetStory.getBoundingClientRect();
+                    const offset = event.clientY - bounding.top;
+                    if (offset > bounding.height / 2) {
+                        storiesContainer.insertBefore(draggedElement, targetStory.nextSibling);
+                    } else {
+                        storiesContainer.insertBefore(draggedElement, targetStory);
+                    }
+                } else {
+                    storiesContainer.appendChild(draggedElement);
+                }
+            }
         }
 
         function drag(event) {
@@ -430,31 +487,84 @@
             const storyId = event.dataTransfer.getData('text');
             const storyElement = document.getElementById(storyId);
             const column = event.target.closest('.column');
-            if (column) {
-                column.querySelector('.stories').appendChild(storyElement);
-                const story = scrumBoard.stories.find(s => s.id === storyId) || scrumBoard.stories.flatMap(s => s.tasks).find(t => t.id === storyId);
-                if (story) {
-                    story.column = column.id;
-                    updatePositions(column.id);
+            if (column && storyElement) {
+                const storiesContainer = column.querySelector('.stories');
+                const referenceElement = getDropPosition(event, storiesContainer, storyElement);
+                if (referenceElement) {
+                    storiesContainer.insertBefore(storyElement, referenceElement);
+                } else {
+                    storiesContainer.appendChild(storyElement);
                 }
+                updateStoryColumn(storyElement, column.id);
+                updatePositions(column.id);
             }
-            updateLines();
+        }
+
+        function getDropPosition(event, container, draggedElement) {
+            const children = Array.from(container.children);
+            const draggingRect = draggedElement.getBoundingClientRect();
+            return children.find(child => {
+                if (child === draggedElement) return false;
+                const childRect = child.getBoundingClientRect();
+                return event.clientY < childRect.top + childRect.height / 2;
+            });
+        }
+
+        function updateStoryColumn(storyElement, newColumnId) {
+            const storyId = storyElement.id;
+            const story = scrumBoard.stories.find(s => s.id === storyId) || scrumBoard.stories.flatMap(s => s.tasks).find(t => t.id === storyId);
+            if (story) {
+                story.column = newColumnId;
+            }
         }
 
         function updatePositions(columnId) {
             const storiesInColumn = Array.from(document.getElementById(columnId).querySelectorAll('.story'));
             storiesInColumn.forEach((storyDiv, index) => {
                 const story = scrumBoard.stories.find(s => s.id === storyDiv.id) || scrumBoard.stories.flatMap(s => s.tasks).find(t => t.id === storyDiv.id);
-                story.position = index + 1;
-                storyDiv.querySelector('.story-position').textContent = `(${story.position})`;
+                if (story) {
+                    story.position = index + 1;
+                    storyDiv.querySelector('.story-position').textContent = `${story.number} (${story.position})`;
+                }
             });
         }
 
         function selectStory(event) {
             const storyDiv = event.currentTarget;
             selectedStoryId = storyDiv.id;
-            removeAllLines();
-            drawLinesForStory(selectedStoryId);
+        }
+
+        // New function to sort stories and tasks
+        function sortStoriesAndTasks() {
+            const columns = ['product-backlog', 'sprint-backlog', 'to-do', 'in-progress', 'done'];
+            columns.forEach(columnId => {
+                const column = document.getElementById(columnId).querySelector('.stories');
+                const items = Array.from(column.children);
+                items.sort((a, b) => {
+                    const aPos = parseInt(a.querySelector('.story-position').textContent.match(/\((\d+)\)/)[1]);
+                    const bPos = parseInt(b.querySelector('.story-position').textContent.match(/\((\d+)\)/)[1]);
+                    return aPos - bPos;
+                });
+                items.forEach(item => column.appendChild(item));
+            });
+        }
+
+        // Modified importScrumBoard function to call sortStoriesAndTasks
+        function importScrumBoard(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    scrumBoard = JSON.parse(e.target.result);
+                    storyCounter = scrumBoard.stories.length;
+                    personCounter = scrumBoard.persons.length;
+
+                    repaintBoard();
+                    populatePersonDropdown();
+                    sortStoriesAndTasks(); // Call the new function after importing
+                };
+                reader.readAsText(file);
+            }
         }
 
         function assignPerson() {
@@ -504,7 +614,7 @@
 
         function showTaskForm(storyId) {
             selectedStoryId = storyId;
-            document.getElementById('addTaskForm').style.display = 'block';
+            document.getElementById('addTaskForm').style.display = 'flex';
         }
 
         function closeTaskForm() {
@@ -538,8 +648,6 @@
                 document.getElementById('taskTitle').value = '';
                 document.getElementById('taskDescription').value = '';
                 closeTaskForm();
-
-                drawLineBetweenElements(document.getElementById(parentStory.id), document.getElementById(task.id));
             } else {
                 alert('Please enter both title and description.');
             }
@@ -550,12 +658,14 @@
             const assignedPersonDivId = `assigned-persons-${task.id}`;
             const taskTextId = `task-text-${task.id}`;
             const deleteCheckboxId = `deleteCheckbox_${task.id}`;
+            const connectionsCount = 1;
             taskDiv.className = 'story task';
             taskDiv.id = task.id;
             taskDiv.innerHTML = `
-                <span class="story-id">${task.number}</span>
-                <span class="story-position">(${task.position})</span>
+                ${connectionsCount > 0 ? `<button class="show-connections" onclick="toggleConnections('${task.id}')">&nbsp;</button>` : ''}
+                <span class="story-id story-position">${task.number} (${task.position})</span>
                 <strong>${task.title}</strong>
+                
                 <div class="assigned-persons" id="${assignedPersonDivId}">${getAssignedPersonsHTML(task.personIds)}</div>
                 <p class="story-text" data-full-text="${task.description}" id="${taskTextId}" style="display: none;">
                     ${task.description}
@@ -567,6 +677,8 @@
             `;
             taskDiv.setAttribute('draggable', 'true');
             taskDiv.setAttribute('ondragstart', 'drag(event)');
+            taskDiv.setAttribute('ondragover', 'allowDrop(event)');
+            taskDiv.setAttribute('ondrop', 'drop(event)');
             taskDiv.setAttribute('onclick', 'selectStory(event)');
             taskDiv.setAttribute('ondblclick', 'toggleDescription(event)');
 
@@ -576,7 +688,7 @@
         function repaintBoard() {
             document.querySelectorAll('.stories').forEach(storiesDiv => storiesDiv.innerHTML = '');
             scrumBoard.stories.forEach(story => displayStory(story));
-            updateLines();
+            removeAllLines();
         }
 
         function exportScrumBoard() {
@@ -589,37 +701,24 @@
             downloadAnchorNode.remove();
         }
 
-        function importScrumBoard(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    scrumBoard = JSON.parse(e.target.result);
-                    storyCounter = scrumBoard.stories.length;
-                    personCounter = scrumBoard.persons.length;
-
-                    repaintBoard();
-                    populatePersonDropdown(); // Ensure dropdown is updated after import
-                };
-                reader.readAsText(file);
-            }
-        }
-
         function drawLineBetweenElements(startElement, endElement) {
             if (startElement && endElement) {
+                console.log(`Drawing line between ${startElement.id} and ${endElement.id}`);
                 const line = new LeaderLine(startElement, endElement);
+                line.show();
                 lines.push(line);
             }
         }
 
-        function updateLines() {
-            lines.forEach(line => line.remove());
-            lines = [];
-            scrumBoard.stories.forEach(story => {
-                story.tasks.forEach(task => {
-                    drawLineBetweenElements(document.getElementById(story.id), document.getElementById(task.id));
-                });
-            });
+        function toggleConnections(storyId) {
+            if (activeConnections === storyId) {
+                removeAllLines();
+                activeConnections = null;
+            } else {
+                removeAllLines();
+                drawLinesForStory(storyId);
+                activeConnections = storyId;
+            }
         }
 
         function drawLinesForStory(storyId) {
@@ -642,16 +741,6 @@
                     }
                 }
             }
-        }
-
-        function removeLinesForStory(storyId) {
-            lines = lines.filter(line => {
-                if (line.start.id === storyId || line.end.id === storyId) {
-                    line.remove();
-                    return false;
-                }
-                return true;
-            });
         }
 
         function removeAllLines() {
