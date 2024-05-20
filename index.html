@@ -183,6 +183,17 @@
         .make-task:hover {
             background-color: #218838;
         }
+        .cancel-task {
+            padding: 5px 10px !important;
+            background-color: #007bff !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 5px !important;
+            cursor: pointer !important;
+        }
+        .cancel-task:hover {
+            background-color: #0056b3 !important;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
 </head>
@@ -222,7 +233,7 @@
         <input type="text" id="taskTitle" placeholder="Task Title">
         <textarea id="taskDescription" rows="2" placeholder="Task Description"></textarea>
         <button class="make-task" onclick="addTask()">New Task</button>
-        <button onclick="closeTaskForm()">Cancel</button>
+        <button class="cancel-task" onclick="closeTaskForm()">Cancel</button>
     </div>
     <div class="scrum-board">
         <div class="column" id="product-backlog" ondrop="drop(event)" ondragover="allowDrop(event)">
@@ -246,7 +257,6 @@
             <div class="stories"></div>
         </div>
     </div>
-
     <script>
         let storyCounter = 0;
         let personCounter = 0;
