@@ -331,14 +331,18 @@
       });
 
       function updateOriginalData(id, item) {
-        const storyIndex = scrumBoard.stories.findIndex(story => story.id === item.id);
+        // Find the story
+        const storyIndex = scrumBoard.stories.findIndex(story => story.id === id);
         if (storyIndex !== -1) {
+          // Update story data
           scrumBoard.stories[storyIndex].startTime = item.start_date.getTime();
           scrumBoard.stories[storyIndex].endTime = item.start_date.getTime() + item.duration * 86400000;
         } else {
+          // Find the task within stories
           scrumBoard.stories.forEach(story => {
-            const taskIndex = story.tasks.findIndex(task => task.id === item.id);
+            const taskIndex = story.tasks.findIndex(task => task.id === id);
             if (taskIndex !== -1) {
+              // Update task data
               story.tasks[taskIndex].startTime = item.start_date.getTime();
               story.tasks[taskIndex].endTime = item.start_date.getTime() + item.duration * 86400000;
             }
