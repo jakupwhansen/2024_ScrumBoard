@@ -346,7 +346,7 @@
         window.onload = () => {
             loadFromLocal();
             populatePersonDropdown();
-            displayInitialStories();
+            repaintBoard(); // Ensure the board is repainted
             toggleInputFields('add-story', 'toggleAddStory');
             toggleInputFields('add-person', 'toggleAddPerson');
             toggleInputFields('delete-persons', 'toggleSelectPerson');
@@ -734,7 +734,7 @@
                 const taskId = `${parentStory.id}-task${++taskCounter}`;
                 const taskNumber = `${parentStory.number}-T${taskCounter}`;
                 const column = parentStory.column;
-                const position = document.getElementById(column).querySelectorAll('.story').length + 1;
+                const position = parentStory.tasks.length + 1;
                 const task = {
                     id: taskId,
                     number: taskNumber,
