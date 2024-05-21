@@ -731,8 +731,8 @@
             const parentStory = scrumBoard.stories.find(s => s.id === selectedStoryId);
 
             if (title && description && parentStory) {
-                const taskId = `${parentStory.id}-task${++taskCounter}`;
-                const taskNumber = `${parentStory.number}-T${taskCounter}`;
+                const taskId = `${parentStory.id}-task${parentStory.tasks.length + 1}`;
+                const taskNumber = `${parentStory.number}-T${parentStory.tasks.length + 1}`;
                 const column = parentStory.column;
                 const position = parentStory.tasks.length + 1;
                 const task = {
