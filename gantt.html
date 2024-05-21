@@ -108,6 +108,10 @@
       align-items: center;
       margin: 10px;
     }
+
+    .gantt_task_progress {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -149,9 +153,6 @@
       const data = localStorage.getItem('scrumBoard');
       if (data) {
         scrumBoard = JSON.parse(data);
-        repaintBoard();
-        populatePersonDropdown();
-        sortStoriesAndTasks();
         loadGanttData(scrumBoard); // Load Gantt data after loading from local storage
       }
     }
@@ -164,9 +165,6 @@
         const reader = new FileReader();
         reader.onload = function(e) {
           scrumBoard = JSON.parse(e.target.result);
-          repaintBoard();
-          populatePersonDropdown();
-          sortStoriesAndTasks();
           loadGanttData(scrumBoard); // Load Gantt data after importing
         };
         reader.readAsText(file);
@@ -181,18 +179,6 @@
       document.body.appendChild(downloadAnchorNode);
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
-    }
-
-    function repaintBoard() {
-      // Your existing code to repaint the board
-    }
-
-    function populatePersonDropdown() {
-      // Your existing code to populate the person dropdown
-    }
-
-    function sortStoriesAndTasks() {
-      // Your existing code to sort stories and tasks
     }
 
     function loadGanttData(data) {
@@ -327,6 +313,12 @@
         {name: "start_date", label: "Start time", align: "center" },
         {name: "duration", label: "Duration", align: "center" }
       ];
+
+      // Enable dragging and resizing, but disable link creation
+      gantt.config.drag_resize = true;
+      gantt.config.drag_progress = false;
+      gantt.config.drag_move = true;
+      gantt.config.drag_links = false;
 
       // Update original data object when tasks are edited
       gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
