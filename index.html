@@ -338,7 +338,8 @@
         let selectedStoryId = null;
         let scrumBoard = {
             persons: [],
-            stories: []
+            stories: [],
+            uniqueIdCounter: 1  // Initialize the unique ID counter
         };
         let lines = [];
         let activeConnections = null;
@@ -391,36 +392,39 @@
         }
 
         function addStory() {
-            const title = document.getElementById('storyTitle').value;
-            const description = document.getElementById('storyDescription').value;
+    const title = document.getElementById('storyTitle').value;
+    const description = document.getElementById('storyDescription').value;
 
-            if (title && description) {
-                const storyId = 'story' + storyCounter++;
-                const storyNumber = 'US_' + (scrumBoard.stories.length + 1);
-                const column = 'product-backlog';
-                const position = document.getElementById(column).querySelectorAll('.story').length + 1;
-                const story = {
-                    id: storyId,
-                    number: storyNumber,
-                    title: title,
-                    description: description,
-                    column: column,
-                    position: position,
-                    personIds: [],
-                    tasks: [],
-                    startTime: null,
-                    endTime: null
-                };
+    if (title && description) {
+        const storyId = 'story' + scrumBoard.uniqueIdCounter;
+        const storyNumber = 'US_' + scrumBoard.uniqueIdCounter;  // Use the incremented counter for the number
+        scrumBoard.uniqueIdCounter++; // Increment the counter first
+        const column = 'product-backlog';
+        const position = document.getElementById(column).querySelectorAll('.story').length + 1;
+        const story = {
+            id: storyId,
+            number: storyNumber,
+            title: title,
+            description: description,
+            column: column,
+            position: position,
+            personIds: [],
+            tasks: [],
+            startTime: null,
+            endTime: null
+        };
 
-                scrumBoard.stories.push(story);
-                repaintBoard();
+        scrumBoard.stories.push(story);
+        repaintBoard();
 
-                document.getElementById('storyTitle').value = '';
-                document.getElementById('storyDescription').value = '';
-            } else {
-                alert('Please enter both title and description.');
-            }
-        }
+        document.getElementById('storyTitle').value = '';
+        document.getElementById('storyDescription').value = '';
+    } else {
+        alert('Please enter both title and description.');
+    }
+}
+
+
 
         function addPerson() {
             const firstName = document.getElementById('personFirstName').value;
@@ -726,38 +730,42 @@
         }
 
         function addTask() {
-            const title = document.getElementById('taskTitle').value;
-            const description = document.getElementById('taskDescription').value;
-            const parentStory = scrumBoard.stories.find(s => s.id === selectedStoryId);
+    const title = document.getElementById('taskTitle').value;
+    const description = document.getElementById('taskDescription').value;
+    const parentStory = scrumBoard.stories.find(s => s.id === selectedStoryId);
 
-            if (title && description && parentStory) {
-                const taskId = `${parentStory.id}-task${parentStory.tasks.length + 1}`;
-                const taskNumber = `${parentStory.number}-T${parentStory.tasks.length + 1}`;
-                const column = parentStory.column;
-                const position = parentStory.tasks.length + 1;
-                const task = {
-                    id: taskId,
-                    number: taskNumber,
-                    title: title,
-                    description: description,
-                    column: column,
-                    position: position,
-                    personIds: [],
-                    parentStoryId: parentStory.id,
-                    startTime: null,
-                    endTime: null
-                };
+    if (title && description && parentStory) {
+        const taskId = 'task' + scrumBoard.uniqueIdCounter;
+        const taskNumber = 'TASK_' + scrumBoard.uniqueIdCounter; // Use the incremented counter for the number
+        scrumBoard.uniqueIdCounter++; // Increment the counter first
+        const column = parentStory.column;
+        const position = parentStory.tasks.length + 1;
+        const task = {
+            id: taskId,
+            number: taskNumber,
+            title: title,
+            description: description,
+            column: column,
+            position: position,
+            personIds: [],
+            parentStoryId: parentStory.id,
+            startTime: null,
+            endTime: null
+        };
 
-                parentStory.tasks.push(task);
-                repaintBoard();
+        parentStory.tasks.push(task);
+        repaintBoard();
 
-                document.getElementById('taskTitle').value = '';
-                document.getElementById('taskDescription').value = '';
-                closeTaskForm();
-            } else {
-                alert('Please enter both title and description.');
-            }
-        }
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('taskDescription').value = '';
+        closeTaskForm();
+    } else {
+        alert('Please enter both title and description.');
+    }
+}
+
+
+
 
         function displayTask(task, storyId) {
             const taskDiv = document.createElement('div');
