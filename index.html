@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,10 +9,12 @@
         body {
             font-family: Arial, sans-serif;
         }
+
         .scrum-board {
             display: flex;
             justify-content: space-between;
         }
+
         .column {
             width: 18%;
             border: 1px solid #ccc;
@@ -22,13 +25,16 @@
             display: flex;
             flex-direction: column;
         }
+
         .column h2 {
             text-align: center;
             margin-bottom: 10px;
         }
+
         .stories {
             flex-grow: 1;
         }
+
         .story {
             position: relative;
             background-color: #fff;
@@ -40,25 +46,30 @@
             display: flex;
             flex-direction: column;
         }
+
         .story .story-id {
             font-size: 12px;
             color: #888;
             margin-bottom: 5px;
         }
+
         .story .story-position {
             font-size: 8px;
             color: #888;
             margin-bottom: 5px;
         }
+
         .story strong {
             font-size: 14px;
             margin-bottom: 5px;
         }
+
         .story .assigned-persons {
             display: flex;
             flex-wrap: wrap;
             margin-bottom: 5px;
         }
+
         .assigned-person {
             display: inline-block;
             width: 20px;
@@ -70,17 +81,21 @@
             color: white;
             margin: 2px 5px 0 0;
         }
+
         .story .story-text {
             margin-bottom: 10px;
         }
+
         .delete-story {
             display: flex;
             align-items: center;
             margin-top: 10px;
         }
+
         .delete-story input {
             margin-right: 5px;
         }
+
         .delete-story button {
             padding: 5px 10px;
             background-color: #dc3545;
@@ -89,19 +104,32 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         .delete-story button:hover {
             background-color: #c82333;
         }
-        .add-story, .add-person, .add-task {
+
+        .add-story,
+        .add-person,
+        .add-task {
             display: flex;
             flex-direction: column;
             margin-bottom: 20px;
         }
-        .add-story input, .add-story textarea, .add-story select, .add-person input, .add-task input, .add-task textarea {
+
+        .add-story input,
+        .add-story textarea,
+        .add-story select,
+        .add-person input,
+        .add-task input,
+        .add-task textarea {
             margin: 5px 0;
             padding: 5px;
         }
-        .add-story button, .add-person button, .add-task button {
+
+        .add-story button,
+        .add-person button,
+        .add-task button {
             padding: 10px;
             background-color: #28a745;
             color: white;
@@ -109,9 +137,13 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        .add-story button:hover, .add-person button:hover, .add-task button:hover {
+
+        .add-story button:hover,
+        .add-person button:hover,
+        .add-task button:hover {
             background-color: #218838;
         }
+
         .top-right-buttons {
             position: absolute;
             top: 10px;
@@ -119,18 +151,21 @@
             display: flex;
             align-items: center;
         }
+
         .dropdown {
             position: relative;
             display: inline-block;
         }
+
         .dropdown-content {
             display: none;
             position: absolute;
             right: 0;
             background-color: #f9f9f9;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
             z-index: 1;
         }
+
         .dropdown-content button {
             background-color: #007bff;
             color: white;
@@ -141,13 +176,19 @@
             width: 100%;
             box-sizing: border-box;
         }
+
         .dropdown-content button:hover {
             background-color: #0056b3;
         }
+
         .dropdown:hover .dropdown-content {
             display: block;
         }
-        .gantt-button, .index-button, .save-local-button, .dropbtn {
+
+        .gantt-button,
+        .index-button,
+        .save-local-button,
+        .dropbtn {
             background-color: #28a745;
             color: white;
             padding: 10px 20px;
@@ -158,38 +199,51 @@
             text-decoration: none;
             margin-right: 10px;
         }
-        .gantt-button:hover, .index-button:hover, .save-local-button:hover, .dropbtn:hover {
+
+        .gantt-button:hover,
+        .index-button:hover,
+        .save-local-button:hover,
+        .dropbtn:hover {
             background-color: #218838;
         }
+
         .save-local-button {
             background-color: #dc3545;
             margin-right: 10px;
         }
+
         .save-local-button:hover {
             background-color: #c82333;
         }
+
         .dropbtn {
             background-color: #007bff;
         }
+
         .dropbtn:hover {
             background-color: #0056b3;
         }
+
         .button-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin: 10px;
         }
+
         .delete-persons {
             display: flex;
             flex-direction: column;
             margin-bottom: 20px;
             position: relative;
         }
-        .delete-persons select, .delete-persons button {
+
+        .delete-persons select,
+        .delete-persons button {
             margin: 5px 0;
             padding: 5px;
         }
+
         .delete-persons button {
             padding: 10px;
             background-color: #dc3545;
@@ -198,14 +252,17 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         .delete-persons button:hover {
             background-color: #c82333;
         }
+
         .delete-checkbox-container {
             display: flex;
             align-items: center;
             margin-top: 5px;
         }
+
         .show-connections {
             margin-bottom: 5px;
             padding: 2px 0;
@@ -219,18 +276,23 @@
             text-align: center;
             align-self: flex-end;
         }
+
         .story .show-connections {
             align-self: flex-end;
         }
+
         .task .show-connections {
             align-self: flex-start;
         }
+
         .show-connections:hover {
             background-color: #0056b3;
         }
+
         .task {
             background-color: lightblue;
         }
+
         .make-task {
             padding: 5px 10px;
             background-color: #28a745;
@@ -239,9 +301,11 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         .make-task:hover {
             background-color: #218838;
         }
+
         .cancel-task {
             padding: 5px 10px !important;
             background-color: #007bff !important;
@@ -250,16 +314,19 @@
             border-radius: 5px !important;
             cursor: pointer !important;
         }
+
         .cancel-task:hover {
             background-color: #0056b3 !important;
         }
+
         h1 {
-         text-align: center;
-         margin: 20px 0;
+            text-align: center;
+            margin: 20px 0;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
 </head>
+
 <body>
     <h1>Scrum Board for Stories and Tasks</h1>
     <div class="top-right-buttons">
@@ -279,7 +346,8 @@
         <label for="toggleAddStory">Add Story</label>
         <input type="checkbox" id="toggleAddPerson" onchange="toggleInputFields('add-person', 'toggleAddPerson')">
         <label for="toggleAddPerson">Add Person</label>
-        <input type="checkbox" id="toggleSelectPerson" onchange="toggleInputFields('delete-persons', 'toggleSelectPerson')">
+        <input type="checkbox" id="toggleSelectPerson"
+            onchange="toggleInputFields('delete-persons', 'toggleSelectPerson')">
         <label for="toggleSelectPerson">Select Person</label>
     </div>
     <div class="add-story" style="display: none;">
@@ -392,37 +460,37 @@
         }
 
         function addStory() {
-    const title = document.getElementById('storyTitle').value;
-    const description = document.getElementById('storyDescription').value;
+            const title = document.getElementById('storyTitle').value;
+            const description = document.getElementById('storyDescription').value;
 
-    if (title && description) {
-        const storyId = 'story' + scrumBoard.uniqueIdCounter;
-        const storyNumber = 'US_' + scrumBoard.uniqueIdCounter;  // Use the incremented counter for the number
-        scrumBoard.uniqueIdCounter++; // Increment the counter first
-        const column = 'product-backlog';
-        const position = document.getElementById(column).querySelectorAll('.story').length + 1;
-        const story = {
-            id: storyId,
-            number: storyNumber,
-            title: title,
-            description: description,
-            column: column,
-            position: position,
-            personIds: [],
-            tasks: [],
-            startTime: null,
-            endTime: null
-        };
+            if (title && description) {
+                const storyId = 'story' + scrumBoard.uniqueIdCounter;
+                const storyNumber = 'US_' + scrumBoard.uniqueIdCounter;  // Use the incremented counter for the number
+                scrumBoard.uniqueIdCounter++; // Increment the counter first
+                const column = 'product-backlog';
+                const position = document.getElementById(column).querySelectorAll('.story').length + 1;
+                const story = {
+                    id: storyId,
+                    number: storyNumber,
+                    title: title,
+                    description: description,
+                    column: column,
+                    position: position,
+                    personIds: [],
+                    tasks: [],
+                    startTime: null,
+                    endTime: null
+                };
 
-        scrumBoard.stories.push(story);
-        repaintBoard();
+                scrumBoard.stories.push(story);
+                repaintBoard();
 
-        document.getElementById('storyTitle').value = '';
-        document.getElementById('storyDescription').value = '';
-    } else {
-        alert('Please enter both title and description.');
-    }
-}
+                document.getElementById('storyTitle').value = '';
+                document.getElementById('storyDescription').value = '';
+            } else {
+                alert('Please enter both title and description.');
+            }
+        }
 
 
 
@@ -478,20 +546,20 @@
             storyDiv.className = 'story';
             storyDiv.id = story.id;
             storyDiv.innerHTML = `
-                ${connectionsCount > 0 ? `<button class="show-connections" onclick="toggleConnections('${story.id}')">${connectionsCount}</button>` : ''}
-                <span class="story-id story-position">${story.number} (${story.position})</span>
-                <strong>${story.title}</strong>
-                <div class="assigned-persons" id="${assignedPersonDivId}">${getAssignedPersonsHTML(story.personIds)}</div>
-                <p class="story-text" data-full-text="${story.description}" id="${storyTextId}" style="display: none;">
-                    ${story.description}
-                </p>
-                <button class="make-task" style="display: none;" onclick="showTaskForm('${story.id}')">New Task</button>
-                <div class="delete-story" style="display: none;">
-                    <input type="checkbox" id="${deleteCheckboxId}">
-                    <button onclick="deleteStory('${story.id}')">Delete</button>
-                </div>
-                <div class="tasks"></div>
-            `;
+        ${connectionsCount > 0 ? `<button class="show-connections" onclick="toggleConnections('${story.id}')">${connectionsCount}</button>` : ''}
+        <span class="story-id story-position">${story.number} (${story.position})</span>
+        <strong>${story.title}</strong>
+        <div class="assigned-persons" id="${assignedPersonDivId}">${getAssignedPersonsHTML(story.personIds)}</div>
+        <p class="story-text" data-full-text="${story.description}" id="${storyTextId}" style="display: none;">
+            ${story.description}
+        </p>
+        <button class="make-task" style="display: none;" onclick="showTaskForm('${story.id}')">New Task</button>
+        <div class="delete-story" style="display: none;">
+            <input type="checkbox" id="${deleteCheckboxId}">
+            <button onclick="deleteStory('${story.id}')">Delete</button>
+        </div>
+        <div class="tasks"></div>
+    `;
             storyDiv.setAttribute('draggable', 'true');
             storyDiv.setAttribute('ondragstart', 'drag(event)');
             storyDiv.setAttribute('ondragover', 'allowDrop(event)');
@@ -500,10 +568,37 @@
             storyDiv.setAttribute('ondblclick', 'toggleDescription(event)');
 
             document.getElementById(story.column).querySelector('.stories').appendChild(storyDiv);
+        }
 
-            story.tasks.forEach(task => {
-                displayTask(task, story.id);
-            });
+        function displayTask(task, storyId) {
+            const taskDiv = document.createElement('div');
+            const assignedPersonDivId = `assigned-persons-${task.id}`;
+            const taskTextId = `task-text-${task.id}`;
+            const deleteCheckboxId = `deleteCheckbox_${task.id}`;
+            const connectionsCount = 1;
+            taskDiv.className = 'story task';
+            taskDiv.id = task.id;
+            taskDiv.innerHTML = `
+        ${connectionsCount > 0 ? `<button class="show-connections" onclick="toggleConnections('${task.id}')">&nbsp;</button>` : ''}
+        <span class="story-id story-position">${task.number} (${task.position})</span>
+        <strong>${task.title}</strong>
+        <div class="assigned-persons" id="${assignedPersonDivId}">${getAssignedPersonsHTML(task.personIds)}</div>
+        <p class="story-text" data-full-text="${task.description}" id="${taskTextId}" style="display: none;">
+            ${task.description}
+        </p>
+        <div class="delete-story" style="display: none;">
+            <input type="checkbox" id="${deleteCheckboxId}">
+            <button onclick="deleteTask('${task.id}', '${storyId}')">Delete</button>
+        </div>
+    `;
+            taskDiv.setAttribute('draggable', 'true');
+            taskDiv.setAttribute('ondragstart', 'drag(event)');
+            taskDiv.setAttribute('ondragover', 'allowDrop(event)');
+            taskDiv.setAttribute('ondrop', 'drop(event)');
+            taskDiv.setAttribute('onclick', 'selectStory(event)');
+            taskDiv.setAttribute('ondblclick', 'toggleDescription(event)');
+
+            document.getElementById(task.column).querySelector('.stories').appendChild(taskDiv);
         }
 
         function getAssignedPersonsHTML(personIds) {
@@ -645,22 +740,35 @@
             const columns = ['product-backlog', 'sprint-backlog', 'to-do', 'in-progress', 'done'];
             columns.forEach(columnId => {
                 const column = document.getElementById(columnId).querySelector('.stories');
-                const items = Array.from(column.children);
-                items.sort((a, b) => {
-                    const aPos = parseInt(a.querySelector('.story-position').textContent.match(/\((\d+)\)/)[1]);
-                    const bPos = parseInt(b.querySelector('.story-position').textContent.match(/\((\d+)\)/)[1]);
-                    return aPos - bPos;
+                column.innerHTML = '';  // Clear the column before sorting and appending
+
+                // Get stories and tasks from scrumBoard
+                const items = scrumBoard.stories.flatMap(story => [story, ...story.tasks])
+                    .filter(item => item.column === columnId);
+
+                // Sort stories and tasks by position
+                items.sort((a, b) => a.position - b.position);
+
+                // Append sorted stories and tasks back to the column
+                items.forEach(item => {
+                    if (item.tasks) {
+                        displayStory(item);
+                    } else {
+                        displayTask(item, item.parentStoryId);
+                    }
                 });
-                items.forEach(item => column.appendChild(item));
             });
         }
+
+
+
 
         // Modified importScrumBoard function to call sortStoriesAndTasks
         function importScrumBoard(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     scrumBoard = JSON.parse(e.target.result);
                     storyCounter = scrumBoard.stories.length;
                     personCounter = scrumBoard.persons.length;
@@ -730,80 +838,52 @@
         }
 
         function addTask() {
-    const title = document.getElementById('taskTitle').value;
-    const description = document.getElementById('taskDescription').value;
-    const parentStory = scrumBoard.stories.find(s => s.id === selectedStoryId);
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const parentStory = scrumBoard.stories.find(s => s.id === selectedStoryId);
 
-    if (title && description && parentStory) {
-        const taskId = 'task' + scrumBoard.uniqueIdCounter;
-        const taskNumber = 'TASK_' + scrumBoard.uniqueIdCounter; // Use the incremented counter for the number
-        scrumBoard.uniqueIdCounter++; // Increment the counter first
-        const column = parentStory.column;
-        const position = parentStory.tasks.length + 1;
-        const task = {
-            id: taskId,
-            number: taskNumber,
-            title: title,
-            description: description,
-            column: column,
-            position: position,
-            personIds: [],
-            parentStoryId: parentStory.id,
-            startTime: null,
-            endTime: null
-        };
+            if (title && description && parentStory) {
+                const taskId = 'task' + scrumBoard.uniqueIdCounter;
+                const taskNumber = 'TASK_' + scrumBoard.uniqueIdCounter; // Use the incremented counter for the number
+                scrumBoard.uniqueIdCounter++; // Increment the counter first
+                const column = parentStory.column;
+                const position = parentStory.tasks.length + 1;
+                const task = {
+                    id: taskId,
+                    number: taskNumber,
+                    title: title,
+                    description: description,
+                    column: column,
+                    position: position,
+                    personIds: [],
+                    parentStoryId: parentStory.id,
+                    startTime: null,
+                    endTime: null
+                };
 
-        parentStory.tasks.push(task);
-        repaintBoard();
+                parentStory.tasks.push(task);
+                repaintBoard();
 
-        document.getElementById('taskTitle').value = '';
-        document.getElementById('taskDescription').value = '';
-        closeTaskForm();
-    } else {
-        alert('Please enter both title and description.');
-    }
-}
-
-
-
-
-        function displayTask(task, storyId) {
-            const taskDiv = document.createElement('div');
-            const assignedPersonDivId = `assigned-persons-${task.id}`;
-            const taskTextId = `task-text-${task.id}`;
-            const deleteCheckboxId = `deleteCheckbox_${task.id}`;
-            const connectionsCount = 1;
-            taskDiv.className = 'story task';
-            taskDiv.id = task.id;
-            taskDiv.innerHTML = `
-                ${connectionsCount > 0 ? `<button class="show-connections" onclick="toggleConnections('${task.id}')">&nbsp;</button>` : ''}
-                <span class="story-id story-position">${task.number} (${task.position})</span>
-                <strong>${task.title}</strong>
-                
-                <div class="assigned-persons" id="${assignedPersonDivId}">${getAssignedPersonsHTML(task.personIds)}</div>
-                <p class="story-text" data-full-text="${task.description}" id="${taskTextId}" style="display: none;">
-                    ${task.description}
-                </p>
-                <div class="delete-story" style="display: none;">
-                    <input type="checkbox" id="${deleteCheckboxId}">
-                    <button onclick="deleteTask('${task.id}', '${storyId}')">Delete</button>
-                </div>
-            `;
-            taskDiv.setAttribute('draggable', 'true');
-            taskDiv.setAttribute('ondragstart', 'drag(event)');
-            taskDiv.setAttribute('ondragover', 'allowDrop(event)');
-            taskDiv.setAttribute('ondrop', 'drop(event)');
-            taskDiv.setAttribute('onclick', 'selectStory(event)');
-            taskDiv.setAttribute('ondblclick', 'toggleDescription(event)');
-
-            document.getElementById(task.column).querySelector('.stories').appendChild(taskDiv);
+                document.getElementById('taskTitle').value = '';
+                document.getElementById('taskDescription').value = '';
+                closeTaskForm();
+            } else {
+                alert('Please enter both title and description.');
+            }
         }
+
+
+
+
 
         function repaintBoard() {
             document.querySelectorAll('.stories').forEach(storiesDiv => storiesDiv.innerHTML = '');
-            scrumBoard.stories.forEach(story => displayStory(story));
+            sortStoriesAndTasks();  // Sort stories and tasks before displaying
             removeAllLines();
         }
+
+
+
 
         function exportScrumBoard() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(scrumBoard));
@@ -869,4 +949,5 @@
         }
     </script>
 </body>
+
 </html>
