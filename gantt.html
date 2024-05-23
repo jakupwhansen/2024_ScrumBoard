@@ -117,10 +117,10 @@
 <body>
   <h1>Gantt Chart for Stories and Tasks</h1>
   <div class="top-right-buttons">
-    <button class="save-local-button" onclick="saveToLocal()">Save Local</button>
+    <button hidden="hidden" class="save-local-button" onclick="saveToLocal()">Save Local</button>
     <a href="index.html" class="index-button">Go to Scrum Board</a>
-    <div class="dropdown">
-      <button class="dropbtn">Menu</button>
+    <div class="dropdown" >
+      <button class="dropbtn"hidden="hidden">Menu</button>
       <div class="dropdown-content">
         <button onclick="exportScrumBoard()">Export Scrum Board</button>
         <input type="file" id="importFile" style="display: none;" onchange="importScrumBoard(event)">
@@ -146,7 +146,7 @@
 
     function saveToLocal() {
       localStorage.setItem('scrumBoard', JSON.stringify(scrumBoard));
-      alert('Data saved locally!');
+      //alert('Data saved locally!');
     }
 
     function loadFromLocal() {
@@ -168,6 +168,7 @@
           loadGanttData(scrumBoard); // Load Gantt data after importing
         };
         reader.readAsText(file);
+        saveToLocal();
       }
     }
 
@@ -182,73 +183,100 @@
     }
 
     function loadGanttData(data) {
-      const tasks = [];
-      const today = new Date();
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
+  const tasks = [];
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
 
-      let minStartDate = null;
-      let maxEndDate = null;
+  let minStartDate = null;
+  let maxEndDate = null;
 
-      data.stories.forEach(story => {
-        const storyStartDate = story.startTime ? new Date(story.startTime) : new Date(today);
-        const storyEndDate = story.endTime ? new Date(story.endTime) : new Date(tomorrow);
+  data.stories.forEach(story => {
+    const storyStartDate = story.startTime ? new Date(story.startTime) : new Date(today);
+    const storyEndDate = story.endTime ? new Date(story.endTime) : new Date(tomorrow);
 
-        // Determine min and max dates
-        if (!minStartDate || storyStartDate < minStartDate) {
-          minStartDate = storyStartDate;
-        }
-        if (!maxEndDate || storyEndDate > maxEndDate) {
-          maxEndDate = storyEndDate;
-        }
-
-        tasks.push({
-          id: story.id,
-          text: story.title,
-          start_date: storyStartDate,
-          duration: (storyEndDate - storyStartDate) / (1000 * 60 * 60 * 24), // Convert duration to days
-          progress: 0.4, // Example progress
-          open: true
-        });
-
-        story.tasks.forEach(task => {
-          const taskStartDate = task.startTime ? new Date(task.startTime) : new Date(today);
-          const taskEndDate = task.endTime ? new Date(task.endTime) : new Date(tomorrow);
-
-          // Determine min and max dates
-          if (!minStartDate || taskStartDate < minStartDate) {
-            minStartDate = taskStartDate;
-          }
-          if (!maxEndDate || taskEndDate > maxEndDate) {
-            maxEndDate = taskEndDate;
-          }
-
-          tasks.push({
-            id: task.id,
-            text: task.title,
-            start_date: taskStartDate,
-            duration: (taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24), // Convert duration to days
-            progress: 0.6, // Example progress
-            parent: story.id
-          });
-        });
-      });
-
-      const ganttData = {
-        data: tasks
-      };
-
-      gantt.clearAll(); // Clear existing data
-      gantt.parse(ganttData); // Load new data
-
-      // Set the Gantt chart's time span with a 5-day buffer
-      if (minStartDate && maxEndDate) {
-        const buffer = 5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds
-        gantt.config.start_date = new Date(minStartDate.getTime() - buffer);
-        gantt.config.end_date = new Date(maxEndDate.getTime() + buffer);
-        gantt.render();
-      }
+    // Determine min and max dates
+    if (!minStartDate || storyStartDate < minStartDate) {
+      minStartDate = storyStartDate;
     }
+    if (!maxEndDate || storyEndDate > maxEndDate) {
+      maxEndDate = storyEndDate;
+    }
+
+    tasks.push({
+      id: story.id,
+      text: story.title,
+      start_date: storyStartDate,
+      duration: (storyEndDate - storyStartDate) / (1000 * 60 * 60 * 24), // Convert duration to days
+      progress: 0.4, // Example progress
+      open: true,
+      column: story.column // Add column property
+    });
+
+    story.tasks.forEach(task => {
+      const taskStartDate = task.startTime ? new Date(task.startTime) : new Date(today);
+      const taskEndDate = task.endTime ? new Date(task.endTime) : new Date(tomorrow);
+
+      // Determine min and max dates
+      if (!minStartDate || taskStartDate < minStartDate) {
+        minStartDate = taskStartDate;
+      }
+      if (!maxEndDate || taskEndDate > maxEndDate) {
+        maxEndDate = taskEndDate;
+      }
+
+      tasks.push({
+        id: task.id,
+        text: task.title,
+        start_date: taskStartDate,
+        duration: (taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24), // Convert duration to days
+        progress: 0.6, // Example progress
+        parent: story.id,
+        column: task.column // Add column property
+      });
+    });
+  });
+
+  const ganttData = {
+    data: tasks
+  };
+
+  gantt.clearAll(); // Clear existing data
+  gantt.parse(ganttData); // Load new data
+
+  // Set the Gantt chart's time span with a 5-day buffer
+  if (minStartDate && maxEndDate) {
+    const buffer = 5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds
+    gantt.config.start_date = new Date(minStartDate.getTime() - buffer);
+    gantt.config.end_date = new Date(maxEndDate.getTime() + buffer);
+    gantt.render();
+  }
+}
+
+// Define a custom task renderer
+gantt.templates.task_class = function(start, end, task) {
+  if (task.column === "done") {
+    return "custom-task-done";
+  } else if (task.column === "in-progress") {
+    return "custom-task-inProgress";
+  }
+  return "custom-task-default";
+};
+
+// Add custom CSS class for "done" column
+const style = document.createElement('style');
+style.innerHTML = `
+  .custom-task-done .gantt_task_content {
+    background-color: #90EE90 !important;
+  }
+  .custom-task-inProgress .gantt_task_content {
+    background-color: #ADD8E6 !important;
+  }
+  .custom-task-default .gantt_task_content {
+    background-color: #D3D3D3 !important;
+  }
+`;
+document.head.appendChild(style);
 
     function refreshGanttChart() {
       loadGanttData(scrumBoard);
@@ -323,6 +351,7 @@
       // Update original data object when tasks are edited
       gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
         updateOriginalData(id, item);
+        saveToLocal();
       });
 
       gantt.attachEvent("onLightboxSave", function(id, item) {
