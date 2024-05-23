@@ -330,7 +330,7 @@
 <body>
     <h1>Scrum Board for Stories and Tasks</h1>
     <div class="top-right-buttons">
-        <button class="save-local-button" onclick="saveToLocal()">Save Local</button>
+        <button hidden="hidden"  class="save-local-button" onclick="saveToLocal()">Save Local</button>
         <a href="Gantt.html" class="gantt-button">Go to Gantt Chart</a>
         <div class="dropdown">
             <button class="dropbtn">Menu</button>
@@ -338,6 +338,12 @@
                 <button onclick="exportScrumBoard()">Export Scrum Board</button>
                 <input type="file" id="importScrumBoardInput" style="display:none" onchange="importScrumBoard(event)">
                 <button onclick="document.getElementById('importScrumBoardInput').click()">Import Scrum Board</button>
+                <button onclick="confirmAndDelete()">Reset</button>
+                <label for="confirmReset">
+                       <input type="checkbox" id="confirmReset">
+                </label>
+
+
             </div>
         </div>
     </div>
@@ -423,9 +429,20 @@
 
         function saveToLocal() {
             localStorage.setItem('scrumBoard', JSON.stringify(scrumBoard));
-            alert('Data saved locally!');
+           // alert('Data saved locally!');
+        }  // Function to check if the checkbox is checked before calling deleteFromLocal
+        function confirmAndDelete() {
+            const confirmResetCheckbox = document.getElementById('confirmReset');
+            if (confirmResetCheckbox.checked) {
+                deleteFromLocal();
+            } else {
+                alert('Please confirm the reset by checking the checkbox.');
+            }
         }
-
+        function deleteFromLocal() {
+            localStorage.removeItem('scrumBoard');
+            alert('Scrum board data has been deleted from local storage!');
+        }
         function loadFromLocal() {
             const data = localStorage.getItem('scrumBoard');
             if (data) {
@@ -440,6 +457,7 @@
             const isChecked = document.getElementById(checkboxId).checked;
             const div = document.querySelector(`.${divClass}`);
             div.style.display = isChecked ? 'flex' : 'none';
+            
         }
 
         function populatePersonDropdown() {
@@ -514,6 +532,7 @@
                 document.getElementById('personFirstName').value = '';
                 document.getElementById('personLastName').value = '';
                 document.getElementById('personColor').value = '#000000';
+                saveToLocal();
             } else {
                 alert('Please enter both first name and last name.');
             }
@@ -681,6 +700,7 @@
 
         function drag(event) {
             event.dataTransfer.setData('text', event.target.id);
+           
         }
 
         function drop(event) {
@@ -698,6 +718,7 @@
                 }
                 updateStoryColumn(storyElement, column.id);
                 updatePositions(column.id);
+                saveToLocal();
             }
         }
 
@@ -807,6 +828,7 @@
                 }
                 // Reset the dropdown to the default "Select a person"
                 document.getElementById('storyPerson').selectedIndex = 0;
+                saveToLocal();
             } else {
                 alert('Please select both a story/task and a person.');
             }
@@ -818,6 +840,7 @@
             if (storyDiv) {
                 storyDiv.querySelector(`#${assignedPersonDivId}`).innerHTML = getAssignedPersonsHTML(story.personIds);
             }
+          
         }
 
         function updateTaskDisplay(task) {
@@ -826,6 +849,7 @@
             if (taskDiv) {
                 taskDiv.querySelector(`#${assignedPersonDivId}`).innerHTML = getAssignedPersonsHTML(task.personIds);
             }
+          
         }
 
         function showTaskForm(storyId) {
@@ -844,7 +868,7 @@
 
             if (title && description && parentStory) {
                 const taskId = 'task' + scrumBoard.uniqueIdCounter;
-                const taskNumber = 'TASK_' + scrumBoard.uniqueIdCounter; // Use the incremented counter for the number
+                const taskNumber = parentStory.number +'_TASK_' + scrumBoard.uniqueIdCounter; // Use the incremented counter for the number
                 scrumBoard.uniqueIdCounter++; // Increment the counter first
                 const column = parentStory.column;
                 const position = parentStory.tasks.length + 1;
@@ -880,6 +904,7 @@
             document.querySelectorAll('.stories').forEach(storiesDiv => storiesDiv.innerHTML = '');
             sortStoriesAndTasks();  // Sort stories and tasks before displaying
             removeAllLines();
+            saveToLocal();
         }
 
 
