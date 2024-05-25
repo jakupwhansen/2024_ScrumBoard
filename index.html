@@ -330,7 +330,7 @@
 <body>
     <h1>Scrum Board for Stories and Tasks</h1>
     <div class="top-right-buttons">
-        <button hidden="hidden"  class="save-local-button" onclick="saveToLocal()">Save Local</button>
+        <button hidden="hidden" class="save-local-button" onclick="saveToLocal()">Save Local</button>
         <a href="Gantt.html" class="gantt-button">Go to Gantt Chart</a>
         <div class="dropdown">
             <button class="dropbtn">Menu</button>
@@ -340,10 +340,8 @@
                 <button onclick="document.getElementById('importScrumBoardInput').click()">Import Scrum Board</button>
                 <button onclick="confirmAndDelete()">Reset</button>
                 <label for="confirmReset">
-                       <input type="checkbox" id="confirmReset">
+                    <input type="checkbox" id="confirmReset">
                 </label>
-
-
             </div>
         </div>
     </div>
@@ -352,8 +350,7 @@
         <label for="toggleAddStory">Add Story</label>
         <input type="checkbox" id="toggleAddPerson" onchange="toggleInputFields('add-person', 'toggleAddPerson')">
         <label for="toggleAddPerson">Add Person</label>
-        <input type="checkbox" id="toggleSelectPerson"
-            onchange="toggleInputFields('delete-persons', 'toggleSelectPerson')">
+        <input type="checkbox" id="toggleSelectPerson" onchange="toggleInputFields('delete-persons', 'toggleSelectPerson')">
         <label for="toggleSelectPerson">Select Person</label>
     </div>
     <div class="add-story" style="display: none;">
@@ -368,14 +365,13 @@
         <button onclick="addPerson()">Add Person</button>
     </div>
     <div class="delete-persons" style="display: none;">
-        <select id="storyPerson" onchange="assignPerson()">
+        <select id="storyPerson" onchange="handlePersonSelection()">
             <option value="">Select a person</option>
         </select>
         <div class="delete-checkbox-container">
-            <input type="checkbox" id="toggleDeletePerson" onchange="toggleDeletePersonButton()">
-            <label for="toggleDeletePerson">Show Delete Person</label>
+            <input type="checkbox" id="toggleDeletePerson">
+            <label for="toggleDeletePerson">Delete Person</label>
         </div>
-        <button id="deletePersonButton" style="display:none;" onclick="deletePerson()">Delete Person</button>
     </div>
     <div class="add-task" id="addTaskForm" style="display: none;">
         <input type="text" id="taskTitle" placeholder="Task Title">
@@ -457,7 +453,6 @@
             const isChecked = document.getElementById(checkboxId).checked;
             const div = document.querySelector(`.${divClass}`);
             div.style.display = isChecked ? 'flex' : 'none';
-            
         }
 
         function populatePersonDropdown() {
@@ -510,8 +505,6 @@
             }
         }
 
-
-
         function addPerson() {
             const firstName = document.getElementById('personFirstName').value;
             const lastName = document.getElementById('personLastName').value;
@@ -538,21 +531,60 @@
             }
         }
 
-        function deletePerson() {
+        function handlePersonSelection() {
+            const deleteCheckbox = document.getElementById('toggleDeletePerson');
             const personId = document.getElementById('storyPerson').value;
-            if (personId) {
-                scrumBoard.persons = scrumBoard.persons.filter(person => person.id !== personId);
-                scrumBoard.stories.forEach(story => {
-                    story.personIds = story.personIds.filter(id => id !== personId);
-                    story.tasks.forEach(task => {
-                        task.personIds = task.personIds.filter(id => id !== personId);
-                        updateTaskDisplay(task);
-                    });
-                    updateStoryDisplay(story);
+
+            if (deleteCheckbox.checked && personId) {
+                deletePerson(personId);
+                deleteCheckbox.checked = false;
+            } else if (!deleteCheckbox.checked && personId) {
+                assignPersonToStoryOrTask(personId);
+            }
+        }
+
+        function deletePerson(personId) {
+            scrumBoard.persons = scrumBoard.persons.filter(person => person.id !== personId);
+            scrumBoard.stories.forEach(story => {
+                story.personIds = story.personIds.filter(id => id !== personId);
+                story.tasks.forEach(task => {
+                    task.personIds = task.personIds.filter(id => id !== personId);
+                    updateTaskDisplay(task);
                 });
-                populatePersonDropdown();
+                updateStoryDisplay(story);
+            });
+            populatePersonDropdown();
+            saveToLocal();
+        }
+
+        function assignPersonToStoryOrTask(personId) {
+            if (selectedStoryId && personId) {
+                const selectedStory = scrumBoard.stories.find(s => s.id === selectedStoryId);
+                if (selectedStory) {
+                    const personIndex = selectedStory.personIds.findIndex(id => id === personId);
+                    if (personIndex > -1) {
+                        selectedStory.personIds.splice(personIndex, 1);
+                    } else {
+                        selectedStory.personIds.push(personId);
+                    }
+                    updateStoryDisplay(selectedStory);
+                } else {
+                    const selectedTask = scrumBoard.stories.flatMap(s => s.tasks).find(t => t.id === selectedStoryId);
+                    if (selectedTask) {
+                        const personIndex = selectedTask.personIds.findIndex(id => id === personId);
+                        if (personIndex > -1) {
+                            selectedTask.personIds.splice(personIndex, 1);
+                        } else {
+                            selectedTask.personIds.push(personId);
+                        }
+                        updateTaskDisplay(selectedTask);
+                    }
+                }
+                // Reset the dropdown to the default "Select a person"
+                document.getElementById('storyPerson').selectedIndex = 0;
+                saveToLocal();
             } else {
-                alert('Please select a person to delete.');
+                alert('Please select both a story/task and a person.');
             }
         }
 
@@ -781,9 +813,6 @@
             });
         }
 
-
-
-
         // Modified importScrumBoard function to call sortStoriesAndTasks
         function importScrumBoard(event) {
             const file = event.target.files[0];
@@ -802,45 +831,12 @@
             }
         }
 
-        function assignPerson() {
-            const personId = document.getElementById('storyPerson').value;
-            if (selectedStoryId && personId) {
-                const selectedStory = scrumBoard.stories.find(s => s.id === selectedStoryId);
-                if (selectedStory) {
-                    const personIndex = selectedStory.personIds.findIndex(id => id === personId);
-                    if (personIndex > -1) {
-                        selectedStory.personIds.splice(personIndex, 1);
-                    } else {
-                        selectedStory.personIds.push(personId);
-                    }
-                    updateStoryDisplay(selectedStory);
-                } else {
-                    const selectedTask = scrumBoard.stories.flatMap(s => s.tasks).find(t => t.id === selectedStoryId);
-                    if (selectedTask) {
-                        const personIndex = selectedTask.personIds.findIndex(id => id === personId);
-                        if (personIndex > -1) {
-                            selectedTask.personIds.splice(personIndex, 1);
-                        } else {
-                            selectedTask.personIds.push(personId);
-                        }
-                        updateTaskDisplay(selectedTask);
-                    }
-                }
-                // Reset the dropdown to the default "Select a person"
-                document.getElementById('storyPerson').selectedIndex = 0;
-                saveToLocal();
-            } else {
-                alert('Please select both a story/task and a person.');
-            }
-        }
-
         function updateStoryDisplay(story) {
             const storyDiv = document.getElementById(story.id);
             const assignedPersonDivId = `assigned-persons-${story.id}`;
             if (storyDiv) {
                 storyDiv.querySelector(`#${assignedPersonDivId}`).innerHTML = getAssignedPersonsHTML(story.personIds);
             }
-          
         }
 
         function updateTaskDisplay(task) {
@@ -849,7 +845,6 @@
             if (taskDiv) {
                 taskDiv.querySelector(`#${assignedPersonDivId}`).innerHTML = getAssignedPersonsHTML(task.personIds);
             }
-          
         }
 
         function showTaskForm(storyId) {
@@ -868,7 +863,7 @@
 
             if (title && description && parentStory) {
                 const taskId = 'task' + scrumBoard.uniqueIdCounter;
-                const taskNumber = parentStory.number +'_TASK_' + scrumBoard.uniqueIdCounter; // Use the incremented counter for the number
+                const taskNumber = parentStory.number + '_TASK_' + scrumBoard.uniqueIdCounter; // Use the incremented counter for the number
                 scrumBoard.uniqueIdCounter++; // Increment the counter first
                 const column = parentStory.column;
                 const position = parentStory.tasks.length + 1;
@@ -896,19 +891,12 @@
             }
         }
 
-
-
-
-
         function repaintBoard() {
             document.querySelectorAll('.stories').forEach(storiesDiv => storiesDiv.innerHTML = '');
             sortStoriesAndTasks();  // Sort stories and tasks before displaying
             removeAllLines();
             saveToLocal();
         }
-
-
-
 
         function exportScrumBoard() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(scrumBoard));
@@ -960,12 +948,6 @@
                     }
                 }
             }
-        }
-
-        function toggleDeletePersonButton() {
-            const isChecked = document.getElementById('toggleDeletePerson').checked;
-            const deleteButton = document.getElementById('deletePersonButton');
-            deleteButton.style.display = isChecked ? 'block' : 'none';
         }
 
         function removeAllLines() {
