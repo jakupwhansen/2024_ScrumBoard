@@ -135,6 +135,7 @@
     <button onclick="setScale('day')">Day</button>
     <button onclick="setScale('week')">Week</button>
     <button onclick="setScale('month')">Month</button>
+    <button onclick="sortStoriesByDate()">Sort Stories by Date</button>
   </div>
   <div id="gantt_here" style="width:100%; height:500px;"></div>
 
@@ -183,100 +184,100 @@
     }
 
     function loadGanttData(data) {
-  const tasks = [];
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
+      const tasks = [];
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
 
-  let minStartDate = null;
-  let maxEndDate = null;
+      let minStartDate = null;
+      let maxEndDate = null;
 
-  data.stories.forEach(story => {
-    const storyStartDate = story.startTime ? new Date(story.startTime) : new Date(today);
-    const storyEndDate = story.endTime ? new Date(story.endTime) : new Date(tomorrow);
+      data.stories.forEach(story => {
+        const storyStartDate = story.startTime ? new Date(story.startTime) : new Date(today);
+        const storyEndDate = story.endTime ? new Date(story.endTime) : new Date(tomorrow);
 
-    // Determine min and max dates
-    if (!minStartDate || storyStartDate < minStartDate) {
-      minStartDate = storyStartDate;
-    }
-    if (!maxEndDate || storyEndDate > maxEndDate) {
-      maxEndDate = storyEndDate;
-    }
+        // Determine min and max dates
+        if (!minStartDate || storyStartDate < minStartDate) {
+          minStartDate = storyStartDate;
+        }
+        if (!maxEndDate || storyEndDate > maxEndDate) {
+          maxEndDate = storyEndDate;
+        }
 
-    tasks.push({
-      id: story.id,
-      text: story.title,
-      start_date: storyStartDate,
-      duration: (storyEndDate - storyStartDate) / (1000 * 60 * 60 * 24), // Convert duration to days
-      progress: 0.4, // Example progress
-      open: true,
-      column: story.column // Add column property
-    });
+        tasks.push({
+          id: story.id,
+          text: story.title,
+          start_date: storyStartDate,
+          duration: (storyEndDate - storyStartDate) / (1000 * 60 * 60 * 24), // Convert duration to days
+          progress: 0.4, // Example progress
+          open: true,
+          column: story.column // Add column property
+        });
 
-    story.tasks.forEach(task => {
-      const taskStartDate = task.startTime ? new Date(task.startTime) : new Date(today);
-      const taskEndDate = task.endTime ? new Date(task.endTime) : new Date(tomorrow);
+        story.tasks.forEach(task => {
+          const taskStartDate = task.startTime ? new Date(task.startTime) : new Date(today);
+          const taskEndDate = task.endTime ? new Date(task.endTime) : new Date(tomorrow);
 
-      // Determine min and max dates
-      if (!minStartDate || taskStartDate < minStartDate) {
-        minStartDate = taskStartDate;
-      }
-      if (!maxEndDate || taskEndDate > maxEndDate) {
-        maxEndDate = taskEndDate;
-      }
+          // Determine min and max dates
+          if (!minStartDate || taskStartDate < minStartDate) {
+            minStartDate = taskStartDate;
+          }
+          if (!maxEndDate || taskEndDate > maxEndDate) {
+            maxEndDate = taskEndDate;
+          }
 
-      tasks.push({
-        id: task.id,
-        text: task.title,
-        start_date: taskStartDate,
-        duration: (taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24), // Convert duration to days
-        progress: 0.6, // Example progress
-        parent: story.id,
-        column: task.column // Add column property
+          tasks.push({
+            id: task.id,
+            text: task.title,
+            start_date: taskStartDate,
+            duration: (taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24), // Convert duration to days
+            progress: 0.6, // Example progress
+            parent: story.id,
+            column: task.column // Add column property
+          });
+        });
       });
-    });
-  });
 
-  const ganttData = {
-    data: tasks
-  };
+      const ganttData = {
+        data: tasks
+      };
 
-  gantt.clearAll(); // Clear existing data
-  gantt.parse(ganttData); // Load new data
+      gantt.clearAll(); // Clear existing data
+      gantt.parse(ganttData); // Load new data
 
-  // Set the Gantt chart's time span with a 5-day buffer
-  if (minStartDate && maxEndDate) {
-    const buffer = 5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds
-    gantt.config.start_date = new Date(minStartDate.getTime() - buffer);
-    gantt.config.end_date = new Date(maxEndDate.getTime() + buffer);
-    gantt.render();
-  }
-}
+      // Set the Gantt chart's time span with a 5-day buffer
+      if (minStartDate && maxEndDate) {
+        const buffer = 5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds
+        gantt.config.start_date = new Date(minStartDate.getTime() - buffer);
+        gantt.config.end_date = new Date(maxEndDate.getTime() + buffer);
+        gantt.render();
+      }
+    }
 
-// Define a custom task renderer
-gantt.templates.task_class = function(start, end, task) {
-  if (task.column === "done") {
-    return "custom-task-done";
-  } else if (task.column === "in-progress") {
-    return "custom-task-inProgress";
-  }
-  return "custom-task-default";
-};
+    // Define a custom task renderer
+    gantt.templates.task_class = function(start, end, task) {
+      if (task.column === "done") {
+        return "custom-task-done";
+      } else if (task.column === "in-progress") {
+        return "custom-task-inProgress";
+      }
+      return "custom-task-default";
+    };
 
-// Add custom CSS class for "done" column
-const style = document.createElement('style');
-style.innerHTML = `
-  .custom-task-done .gantt_task_content {
-    background-color: #90EE90 !important;
-  }
-  .custom-task-inProgress .gantt_task_content {
-    background-color: #ADD8E6 !important;
-  }
-  .custom-task-default .gantt_task_content {
-    background-color: #D3D3D3 !important;
-  }
-`;
-document.head.appendChild(style);
+    // Add custom CSS class for "done" column
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .custom-task-done .gantt_task_content {
+        background-color: #90EE90 !important;
+      }
+      .custom-task-inProgress .gantt_task_content {
+        background-color: #ADD8E6 !important;
+      }
+      .custom-task-default .gantt_task_content {
+        background-color: #D3D3D3 !important;
+      }
+    `;
+    document.head.appendChild(style);
 
     function refreshGanttChart() {
       loadGanttData(scrumBoard);
@@ -316,6 +317,11 @@ document.head.appendChild(style);
           break;
       }
       gantt.render();
+    }
+
+    function sortStoriesByDate() {
+      scrumBoard.stories.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+      loadGanttData(scrumBoard);
     }
 
     document.addEventListener('DOMContentLoaded', function () {
